@@ -1,7 +1,7 @@
 //  Copyright (c) 2015 Rob Rix. All rights reserved.
 
 /// An enum representing either a failure with an explanatory error, or a success with a result value.
-public enum Result<Value, Error: Swift.Error>: ResultProtocol, CustomStringConvertible, CustomDebugStringConvertible {
+public enum DualResult<Value, Error: Swift.Error>: DualResultProtocol, CustomStringConvertible, CustomDebugStringConvertible {
 	case success(Value)
 	case failure(Error)
 
@@ -19,7 +19,7 @@ public enum Result<Value, Error: Swift.Error>: ResultProtocol, CustomStringConve
 
 	/// Constructs a result from an `Optional`, failing with `Error` if `nil`.
 	public init(_ value: Value?, failWith: @autoclosure () -> Error) {
-		self = value.map(Result.success) ?? .failure(failWith())
+		self = value.map(DualResult.success) ?? .failure(failWith())
 	}
 
 	/// Constructs a result from a function that uses `throw`, failing with `Error` if throws.
@@ -110,12 +110,12 @@ public enum Result<Value, Error: Swift.Error>: ResultProtocol, CustomStringConve
 	}
 
 	// MARK: ResultProtocol
-	public var result: Result<Value, Error> {
+	public var result: DualResult<Value, Error> {
 		return self
 	}
 }
 
-extension Result where Error == AnyError {
+extension DualResult where Error == AnyError {
 	/// Constructs a result from an expression that uses `throw`, failing with `AnyError` if throws.
 	public init(_ f: @autoclosure () throws -> Value) {
 		self.init(attempt: f)
@@ -134,13 +134,13 @@ extension Result where Error == AnyError {
 // MARK: - Derive result from failable closure
 
 @available(*, deprecated, renamed: "Result.init(attempt:)")
-public func materialize<T>(_ f: () throws -> T) -> Result<T, AnyError> {
-	return Result(attempt: f)
+public func materialize<T>(_ f: () throws -> T) -> DualResult<T, AnyError> {
+	return DualResult(attempt: f)
 }
 
 @available(*, deprecated, renamed: "Result.init(_:)")
-public func materialize<T>(_ f: @autoclosure () throws -> T) -> Result<T, AnyError> {
-	return Result(f)
+public func materialize<T>(_ f: @autoclosure () throws -> T) -> DualResult<T, AnyError> {
+	return DualResult(f)
 }
 
 // MARK: - ErrorConvertible conformance
